@@ -7,10 +7,14 @@ const Calculator = () => {
   const [operation, setOperation] = useState(null);
   const [previousValue, setPreviousValue] = useState(null);
   const [waitingForSecondValue, setWaitingForSecondValue] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleNumberClick = (value) => {
+    setError(null);
     if (display === '0' && value !== '.') {
       setDisplay(value);
+    } else if (value === '.' && display.includes('.')) {
+      return; // Prevent multiple decimal points
     } else {
       setDisplay(display + value);
     }
@@ -18,6 +22,7 @@ const Calculator = () => {
   };
 
   const handleOperationClick = (op) => {
+    setError(null);
     setPreviousValue(parseFloat(display));
     setOperation(op);
     setWaitingForSecondValue(true);
@@ -25,7 +30,10 @@ const Calculator = () => {
   };
 
   const handleEqualsClick = async () => {
-    if (!operation || previousValue === null) return;
+    if (!operation || previousValue === null) {
+      setError('Invalid operation or missing value');
+      return;
+    }
 
     const currentValue = parseFloat(display);
     let result;
@@ -51,6 +59,7 @@ const Calculator = () => {
       result = data.result;
       setDisplay(result.toString());
     } catch (error) {
+      setError('Calculation failed. Please try again.');
       setDisplay('Error');
     }
 
@@ -64,9 +73,11 @@ const Calculator = () => {
     setOperation(null);
     setPreviousValue(null);
     setWaitingForSecondValue(false);
+    setError(null);
   };
 
   const handleBackspaceClick = () => {
+    setError(null);
     if (display.length === 1 || (display.length === 2 && display.startsWith('-'))) {
       setDisplay('0');
     } else {
@@ -91,6 +102,8 @@ const Calculator = () => {
           variant="outlined"
           fullWidth
           disabled
+          error={!!error}
+          helperText={error || ''}
           inputProps={{
             style: { textAlign: 'right', fontSize: '2rem' },
           }}

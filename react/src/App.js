@@ -1,23 +1,23 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import ErrorBoundary from './ErrorBoundary';
 import Calculator from './components/Calculator';
 import './App.css';
 
 function App() {
   return (
-    <ErrorBoundary>
-      <Router>
-        <div className="App">
-          <header className="App-header">
-            <Routes>
-              <Route path="/calculator" element={<Calculator />} />
-              <Route path="/" element={<div>Welcome to the App! Go to <a href="/calculator">Calculator</a></div>} />
-            </Routes>
-          </header>
-        </div>
-      </Router>
-    </ErrorBoundary>
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/calculator" element={<Calculator />} />
+          <Route path="/" element={
+            <div style={{ textAlign: 'center', marginTop: '50px' }}>
+              <h1>Welcome to the Calculator App</h1>
+              <p>Navigate to <a href="/calculator">Calculator</a> to start calculating.</p>
+            </div>
+          } />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
