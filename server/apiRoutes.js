@@ -1,23 +1,5 @@
 const express = require('express');
 
-/**
- * Пример создания модели в базу данных
- */
-// const mongoose = require('mongoose');
-// const db = require('/db');
-
-// const MongoTestSchema = new mongoose.Schema({
-//   value: { type: String, required: true },
-// });
-
-// const MongoModelTest = db.mongoDb.model('Test', MongoTestSchema);
-
-// const newTest = new MongoModelTest({
-//   value: 'test-value',
-// });
-
-// newTest.save();
-
 const router = express.Router();
 
 // GET /api/hello
@@ -33,5 +15,31 @@ router.get('/status', (req, res) => {
   });
 });
 
-module.exports = router;
+// POST /api/calculate
+router.post('/calculate', (req, res) => {
+  const { value1, value2, operation } = req.body;
 
+  if (!value1 || !value2 || !operation) {
+    return res.status(400).json({ error: 'Missing parameters' });
+  }
+
+  let result;
+  if (operation === '+') {
+    result = value1 + value2;
+  } else if (operation === '-') {
+    result = value1 - value2;
+  } else if (operation === '*') {
+    result = value1 * value2;
+  } else if (operation === '/') {
+    if (value2 === 0) {
+      return res.status(400).json({ error: 'Division by zero' });
+    }
+    result = value1 / value2;
+  } else {
+    return res.status(400).json({ error: 'Invalid operation' });
+  }
+
+  res.json({ result });
+});
+
+module.exports = router;
