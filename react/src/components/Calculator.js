@@ -1,55 +1,34 @@
 import React, { useState } from 'react';
-import { Grid, Button, Paper, Typography } from '@mui/material';
+import { Grid, Button, TextField, Box, Paper, Typography } from '@mui/material';
 import './Calculator.css';
 
 const Calculator = () => {
   const [display, setDisplay] = useState('0');
-  const [previousValue, setPreviousValue] = useState(null);
   const [operation, setOperation] = useState(null);
-  const [waitingForSecondOperand, setWaitingForSecondOperand] = useState(false);
+  const [previousValue, setPreviousValue] = useState(null);
+  const [waitingForSecondValue, setWaitingForSecondValue] = useState(false);
 
-  const handleDigitClick = (digit) => {
-    if (display === '0' && digit !== '.') {
-      setDisplay(digit);
+  const handleNumberClick = (value) => {
+    if (display === '0' && value !== '.') {
+      setDisplay(value);
     } else {
-      setDisplay(display + digit);
+      setDisplay(display + value);
     }
-    setWaitingForSecondOperand(false);
+    setWaitingForSecondValue(false);
   };
 
   const handleOperationClick = (op) => {
     setPreviousValue(parseFloat(display));
     setOperation(op);
-    setWaitingForSecondOperand(true);
+    setWaitingForSecondValue(true);
     setDisplay('0');
   };
 
-  const handleEqualClick = async () => {
-    if (!previousValue || !operation) return;
+  const handleEqualsClick = async () => {
+    if (!operation || previousValue === null) return;
 
     const currentValue = parseFloat(display);
-    let result = 0;
-
-    switch (operation) {
-      case '+':
-        result = previousValue + currentValue;
-        break;
-      case '-':
-        result = previousValue - currentValue;
-        break;
-      case '*':
-        result = previousValue * currentValue;
-        break;
-      case '/':
-        if (currentValue === 0) {
-          setDisplay('Error');
-          return;
-        }
-        result = previousValue / currentValue;
-        break;
-      default:
-        return;
-    }
+    let result;
 
     try {
       const response = await fetch('/api/calculate', {
@@ -58,32 +37,33 @@ const Calculator = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          num1: previousValue,
-          num2: currentValue,
-          operation,
+          value1: previousValue,
+          value2: currentValue,
+          operation: operation,
         }),
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        setDisplay(data.result.toString());
-      } else {
-        setDisplay('Error');
+      if (!response.ok) {
+        throw new Error('Calculation error');
       }
+
+      const data = await response.json();
+      result = data.result;
+      setDisplay(result.toString());
     } catch (error) {
-      setDisplay(result.toString()); // Fallback to client-side calculation if server fails
+      setDisplay('Error');
     }
 
-    setPreviousValue(null);
     setOperation(null);
-    setWaitingForSecondOperand(false);
+    setPreviousValue(null);
+    setWaitingForSecondValue(false);
   };
 
   const handleClearClick = () => {
     setDisplay('0');
-    setPreviousValue(null);
     setOperation(null);
-    setWaitingForSecondOperand(false);
+    setPreviousValue(null);
+    setWaitingForSecondValue(false);
   };
 
   const handleBackspaceClick = () => {
@@ -103,33 +83,41 @@ const Calculator = () => {
   ];
 
   return (
-    <Paper elevation={3} className="calculator-container">
-      <Typography variant="h4" className="calculator-display">
-        {display}
-      </Typography>
-      <Grid container spacing={1} className="calculator-grid">
-        {buttons.map((btn) => (
-          <Grid item xs={3} key={btn}>
-            <Button
-              variant="contained"
-              fullWidth
-              className={`calculator-button ${
-                ['+', '-', '*', '/'].includes(btn) ? 'operation-button' : ''
-              } ${btn === '=' ? 'equals-button' : ''}`}
-              onClick={() => {
-                if (btn === 'C') handleClearClick();
-                else if (btn === '⌫') handleBackspaceClick();
-                else if (btn === '=') handleEqualClick();
-                else if (['+', '-', '*', '/'].includes(btn)) handleOperationClick(btn);
-                else handleDigitClick(btn);
-              }}
-            >
-              {btn}
-            </Button>
-          </Grid>
-        ))}
-      </Grid>
-    </Paper>
+    <Box className="calculator-container">
+      <Paper elevation={3} className="calculator-paper">
+        <TextField
+          className="calculator-display"
+          value={display}
+          variant="outlined"
+          fullWidth
+          disabled
+          inputProps={{
+            style: { textAlign: 'right', fontSize: '2rem' },
+          }}
+        />
+        <Grid container spacing={1} className="calculator-buttons">
+          {buttons.map((btn) => (
+            <Grid item xs={3} key={btn}>
+              <Button
+                variant={btn === '=' ? 'contained' : 'outlined'}
+                color={['+', '-', '*', '/'].includes(btn) ? 'secondary' : btn === '=' ? 'primary' : 'default'}
+                fullWidth
+                className="calculator-button"
+                onClick={() => {
+                  if (btn === 'C') handleClearClick();
+                  else if (btn === '⌫') handleBackspaceClick();
+                  else if (btn === '=') handleEqualsClick();
+                  else if (['+', '-', '*', '/'].includes(btn)) handleOperationClick(btn);
+                  else handleNumberClick(btn);
+                }}
+              >
+                <Typography variant="h6">{btn}</Typography>
+              </Button>
+            </Grid>
+          ))}
+        </Grid>
+      </Paper>
+    </Box>
   );
 };
 
