@@ -1,5 +1,6 @@
 import logo from './logo.svg';
 import ErrorBoundary from './ErrorBoundary';
+import Calculator from './components/Calculator';
 import './App.css';
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
             Шаблон React успешно развернут, <br />
             Ждите обновлений от AI :)
           </p>
+          <Calculator />
         </header>
       </div>
     </ErrorBoundary>
